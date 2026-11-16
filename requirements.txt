@@ -1,0 +1,30 @@
+
+# ==========================================
+# HCMC Traffic LOS Forecasting
+# Python 3.12
+# ==========================================
+
+# Data processing
+numpy>=1.26,<3.0
+pandas>=2.2,<4.0
+scipy>=1.13,<2.0
+
+# Data visualization
+matplotlib>=3.8,<4.0
+seaborn>=0.13,<1.0
+
+# Machine Learning
+scikit-learn>=1.5,<2.0
+xgboost>=2.1,<4.0
+
+# Model interpretation
+shap>=0.46,<1.0
+
+# Jupyter environment
+jupyterlab>=4.2,<5.0
+notebook>=7.0,<8.0
+ipykernel>=6.29,<7.0
+
+# Data formats
+pyarrow>=17.0,<25.0
+openpyxl>=3.1,<4.0

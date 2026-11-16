@@ -218,3 +218,57 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# ==========================================
+# HCMC TRAFFIC LOS FORECASTING - CUSTOM RULES
+# ==========================================
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# VS Code local settings
+.vscode/
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+**/.ipynb_checkpoints/
+
+# Raw datasets - do not upload to GitHub
+data/raw/*
+!data/raw/.gitkeep
+
+# Processed datasets - do not upload to GitHub
+data/processed/*
+!data/processed/.gitkeep
+
+# External datasets
+data/external/*
+!data/external/.gitkeep
+
+# Trained models
+models/*
+!models/.gitkeep
+
+# Model artifacts
+*.pkl
+*.joblib
+*.h5
+*.pt
+*.pth
+*.onnx
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Windows system files
+Thumbs.db
+Desktop.ini
+
