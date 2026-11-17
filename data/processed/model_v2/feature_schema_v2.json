@@ -1,0 +1,182 @@
+{
+    "project": "HCMC Traffic LOS Forecasting",
+    "dataset_version": "2.0",
+    "task": "Multiclass Classification",
+    "prediction_objective": "Predict LOS 30 minutes ahead",
+    "prediction_horizon_minutes": 30,
+    "timezone": "Asia/Ho_Chi_Minh",
+    "target": {
+        "name": "target_los_30m",
+        "classes": [
+            "A",
+            "B",
+            "C",
+            "D",
+            "E",
+            "F"
+        ],
+        "label_source": "Source-provided LOS at future observation",
+        "generation_rule": "Match the same segment_id at exactly observation_time + 30 minutes",
+        "label_definition_status": "Formal LOS threshold documentation not verified"
+    },
+    "features": {
+        "total_features": 19,
+        "numeric_features": [
+            "hour_sin",
+            "hour_cos",
+            "weekday_sin",
+            "weekday_cos",
+            "month_sin",
+            "month_cos",
+            "is_weekend",
+            "length",
+            "center_longitude",
+            "center_latitude",
+            "temperature_2m",
+            "relative_humidity_2m",
+            "precipitation",
+            "wind_speed_10m",
+            "cloud_cover"
+        ],
+        "categorical_features": [
+            "LOS",
+            "street_level",
+            "street_type",
+            "weather_code"
+        ],
+        "categorical_values_observed_in_train": {
+            "LOS": [
+                "A",
+                "B",
+                "C",
+                "D",
+                "E",
+                "F"
+            ],
+            "street_level": [
+                "1",
+                "2",
+                "3",
+                "4"
+            ],
+            "street_type": [
+                "primary",
+                "primary_link",
+                "residential",
+                "secondary",
+                "secondary_link",
+                "tertiary",
+                "tertiary_link",
+                "trunk",
+                "trunk_link",
+                "unclassified"
+            ],
+            "weather_code": [
+                "0",
+                "1",
+                "2",
+                "3",
+                "51",
+                "53",
+                "55",
+                "61",
+                "63"
+            ]
+        },
+        "feature_columns": [
+            "LOS",
+            "hour_sin",
+            "hour_cos",
+            "is_weekend",
+            "length",
+            "street_level",
+            "street_type",
+            "center_longitude",
+            "center_latitude",
+            "temperature_2m",
+            "relative_humidity_2m",
+            "precipitation",
+            "weather_code",
+            "wind_speed_10m",
+            "cloud_cover",
+            "weekday_sin",
+            "weekday_cos",
+            "month_sin",
+            "month_cos"
+        ]
+    },
+    "datasets": {
+        "train": {
+            "file": "train_dataset_v2.parquet",
+            "samples": 4879,
+            "target_distribution": {
+                "A": 956,
+                "B": 153,
+                "C": 803,
+                "D": 1701,
+                "E": 1071,
+                "F": 195
+            },
+            "observation_time_utc": {
+                "start": "2020-07-04T08:00:00+00:00",
+                "end": "2020-12-06T14:30:00+00:00"
+            }
+        },
+        "holdout": {
+            "file": "holdout_dataset_v2.parquet",
+            "samples": 2998,
+            "target_distribution": {
+                "A": 1635,
+                "B": 1004,
+                "C": 32,
+                "D": 35,
+                "E": 24,
+                "F": 268
+            },
+            "observation_time_utc": {
+                "start": "2020-12-07T09:00:00+00:00",
+                "end": "2021-04-22T06:00:00+00:00"
+            }
+        }
+    },
+    "metadata": {
+        "train_file": "train_metadata_v2.parquet",
+        "holdout_file": "holdout_metadata_v2.parquet",
+        "columns": [
+            "row_order",
+            "sample_id",
+            "segment_id",
+            "observation_time_local",
+            "observation_time_utc",
+            "target_time_utc"
+        ],
+        "purpose": "Sample identification and temporal traceability"
+    },
+    "split_strategy": {
+        "method": "Chronological holdout",
+        "latest_train_target_utc": "2020-12-06T15:00:00+00:00",
+        "earliest_holdout_observation_utc": "2020-12-07T09:00:00+00:00"
+    },
+    "preprocessing": {
+        "missing_values": "No missing values",
+        "duplicate_samples": "No duplicate sample keys",
+        "zero_length_policy": "Exclude observations belonging to invalid zero-length source road segments",
+        "categorical_encoding": "Not applied",
+        "numerical_scaling": "Not applied",
+        "class_balancing": "Not applied"
+    },
+    "quality_validation": {
+        "parquet_round_trip": true,
+        "feature_metadata_alignment": true,
+        "unique_sample_ids": true,
+        "target_interval_30_minutes": true,
+        "train_holdout_temporal_separation": true,
+        "missing_values": 0
+    },
+    "known_limitations": [
+        "Target coverage was 23.62% of original traffic observations before filtering.",
+        "Strong LOS distribution shift exists between train and holdout.",
+        "Formal source LOS label thresholds have not been verified.",
+        "Holdout should not be resampled or used for training."
+    ]
+}
