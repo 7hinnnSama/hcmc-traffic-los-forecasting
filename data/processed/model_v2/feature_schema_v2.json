@@ -1,7 +1,7 @@
 {
     "project": "HCMC Traffic LOS Forecasting",
     "dataset_version": "2.0",
-    "task": "Multiclass Classification",
+    "task": "Multiclass classification",
     "prediction_objective": "Predict LOS 30 minutes ahead",
     "prediction_horizon_minutes": 30,
     "timezone": "Asia/Ho_Chi_Minh",
@@ -16,8 +16,8 @@
             "F"
         ],
         "label_source": "Source-provided LOS at future observation",
-        "generation_rule": "Match the same segment_id at exactly observation_time + 30 minutes",
-        "label_definition_status": "Formal LOS threshold documentation not verified"
+        "generation_rule": "Exact match on the same segment_id at observation_time_utc + 30 minutes",
+        "label_definition_status": "Formal LOS threshold documentation has not been verified"
     },
     "features": {
         "total_features": 19,
@@ -106,6 +106,10 @@
         ]
     },
     "datasets": {
+        "source_observations": 33441,
+        "valid_targets_before_road_filter": 7898,
+        "target_coverage_before_road_filter_percent": 23.62,
+        "observations_removed_by_source_length_filter": 21,
         "train": {
             "file": "train_dataset_v2.parquet",
             "samples": 4879,
@@ -158,25 +162,26 @@
         "earliest_holdout_observation_utc": "2020-12-07T09:00:00+00:00"
     },
     "preprocessing": {
-        "missing_values": "No missing values",
-        "duplicate_samples": "No duplicate sample keys",
-        "zero_length_policy": "Exclude observations belonging to invalid zero-length source road segments",
+        "missing_values": "No missing values in final feature and metadata tables",
+        "duplicate_samples": "No duplicate segment-time sample keys",
+        "source_length_filter": "Exclude observations mapped to segments whose source length is 0 m. The coordinate audit found that source length matches the floored Haversine endpoint distance; these records are sub-meter after source rounding and are not asserted to be malformed road geometry.",
         "categorical_encoding": "Not applied",
         "numerical_scaling": "Not applied",
         "class_balancing": "Not applied"
     },
     "quality_validation": {
         "parquet_round_trip": true,
-        "feature_metadata_alignment": true,
+        "feature_metadata_row_alignment": true,
         "unique_sample_ids": true,
         "target_interval_30_minutes": true,
         "train_holdout_temporal_separation": true,
         "missing_values": 0
     },
     "known_limitations": [
-        "Target coverage was 23.62% of original traffic observations before filtering.",
-        "Strong LOS distribution shift exists between train and holdout.",
+        "Valid future targets cover 23.62% of original traffic observations before the source-length filter.",
+        "A strong LOS distribution shift exists between Train and chronological Holdout.",
         "Formal source LOS label thresholds have not been verified.",
-        "Holdout should not be resampled or used for training."
+        "Weather variables represent the historical weather source location, not road-level weather stations.",
+        "Source-zero-length segments are sub-meter according to the endpoint-coordinate audit; the exclusion is a documented dataset policy."
     ]
 }

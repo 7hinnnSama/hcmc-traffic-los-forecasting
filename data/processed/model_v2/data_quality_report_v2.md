@@ -1,30 +1,38 @@
-# Data Quality Report - HCMC Traffic LOS Forecasting
+# Data Quality Report — HCMC Traffic LOS Forecasting
 
-## 1. Dataset Overview
+## 1. Dataset overview
 
 | Attribute | Value |
 |---|---|
 | Dataset version | V2 |
-| Task | Multiclass classification |
-| Prediction objective | LOS at t+30 minutes |
+| Preparation objective | LOS at t+30 minutes |
 | Train samples | 4,879 |
 | Holdout samples | 2,998 |
-| Total samples | 7,877 |
-| Total features | 19 |
+| Total final samples | 7,877 |
+| Features | 19 |
 | Numerical features | 15 |
 | Categorical features | 4 |
 | Target | target_los_30m |
 | Target classes | A, B, C, D, E, F |
 
-## 2. Dataset Files
+## 2. Deliverables
 
-- train_dataset_v2.parquet
-- holdout_dataset_v2.parquet
-- train_metadata_v2.parquet
-- holdout_metadata_v2.parquet
-- feature_schema_v2.json
+- `train_dataset_v2.parquet`
+- `holdout_dataset_v2.parquet`
+- `train_metadata_v2.parquet`
+- `holdout_metadata_v2.parquet`
+- `feature_schema_v2.json`
+- `data_quality_report_v2.md`
 
-## 3. Target Distribution
+## 3. Target coverage
+
+- Original traffic observations: 33,441
+- Valid future targets before road-length filtering: 7,898
+- Target coverage before road-length filtering: 23.62%
+- Samples excluded by the source-length filter: 21
+- Final samples: 7,877
+
+## 4. Target distribution
 
 | LOS | Train | Train (%) | Holdout | Holdout (%) |
 |---|---:|---:|---:|---:|
@@ -36,27 +44,28 @@
 | F | 195 | 4.00% | 268 | 8.94% |
 
 
-## 4. Data Quality Validation
+## 5. Final data-quality validation
 
-Total checks: 24
-Passed: 24
-Failed: 0
+- Total checks: 25
+- Passed: 25
+- Failed: 0
 
 | Check | Result |
 |---|---|
-| All 5 deliverables exist | PASS |
-| Train shape | PASS |
-| Holdout shape | PASS |
+| All 5 core deliverables exist | PASS |
+| Train release shape | PASS |
+| Holdout release shape | PASS |
 | Train metadata shape | PASS |
 | Holdout metadata shape | PASS |
 | Train and Holdout columns match | PASS |
 | Feature columns match schema | PASS |
-| Numerical + categorical features complete | PASS |
+| Numerical and categorical features are complete and disjoint | PASS |
 | Target exists | PASS |
 | No missing values in Train | PASS |
 | No missing values in Holdout | PASS |
 | No missing metadata | PASS |
-| No infinite values | PASS |
+| No infinite numerical values | PASS |
+| All retained road lengths are positive | PASS |
 | No duplicate Train samples | PASS |
 | No duplicate Holdout samples | PASS |
 | No Train-Holdout sample overlap | PASS |
@@ -70,73 +79,46 @@ Failed: 0
 | No duplicate sample IDs across partitions | PASS |
 
 
-## 5. Data Cleaning Operations
+## 6. Data-preparation operations
 
-- Integrated traffic observations with road attributes.
-- Integrated historical weather information.
-- Standardized timestamps and timezone handling.
-- Generated future LOS target at exactly t+30 minutes.
-- Applied chronological Train/Holdout separation.
-- Removed observations belonging to invalid zero-length source road segments.
-- Refined numerical and categorical feature schemas.
-- Preserved metadata for sample traceability.
-- Exported datasets in Parquet format.
+- Integrated traffic observations with road-segment attributes and node coordinates.
+- Integrated historical weather using a backward as-of join with a 30-minute tolerance.
+- Generated the future LOS label by exact same-segment matching at t+30 minutes.
+- Audited target coverage and temporal distribution.
+- Created a chronological Train/Holdout partition and checked target-time separation.
+- Refined temporal, road, and weather feature columns.
+- Audited categorical availability and numerical feature drift.
+- Audited source road-length precision using endpoint coordinates.
+- Excluded observations mapped to source segments with a recorded length of 0 m.
+- Preserved separate metadata for sample identification and temporal traceability.
+- Exported and reloaded the V2 Parquet deliverables.
 
-## 6. Known Limitations
+## 7. Source-length filtering policy
 
-### 6.1 Limited target coverage
+The source road table contains 154 segments whose recorded integer length is 0 m. The endpoint-coordinate audit found that source lengths match the floored Haversine distance for the supplied road table. Thus, these records are sub-meter according to the endpoint coordinates.
 
-Original traffic observations: 33,441.
-Valid future targets before road filtering: 7,898.
-Original target coverage: 23.62%.
-Final samples after invalid road filtering: 7,877.
+The V2 pipeline excludes observations mapped to these segments to avoid zero-valued length features. This is a documented dataset policy; it does not establish that the corresponding road geometries are malformed.
 
-### 6.2 Temporal distribution shift
+## 8. Known limitations
 
-The LOS distribution differs substantially between Train and Holdout.
-The original chronological split is preserved.
-Holdout has not been resampled or used for training.
+- Exact future LOS labels are available for 23.62% of the original traffic observations before road-length filtering.
+- LOS class proportions differ substantially between Train and chronological Holdout.
+- Formal source LOS classification thresholds have not been independently verified.
+- Weather variables come from the historical weather source location and are not road-level station measurements.
+- The observed roads and historical period should not be assumed to represent all roads or all traffic conditions in Ho Chi Minh City.
 
-### 6.3 LOS label definition
+## 9. Handoff notes
 
-LOS labels are inherited from the source dataset.
-Their formal classification thresholds have not been independently verified.
+- The feature table contains the selected predictors and `target_los_30m`.
+- Segment identifiers and timestamps are stored separately in the metadata files.
+- `feature_schema_v2.json` defines the feature names and their numerical/categorical groups.
+- Categorical encoding, numerical scaling, and class balancing have not been applied in this data-preparation pipeline.
+- The chronological Holdout partition has been preserved unchanged.
 
-### 6.4 Temporal and geographical coverage
+## 10. Conclusion
 
-The dataset covers a limited historical period and observed road segments.
-It should not automatically be considered representative of all roads
-and traffic conditions across Ho Chi Minh City.
+The V2 release passed all 25 implemented final data-quality checks.
 
-### 6.5 Weather representation
-
-Weather variables originate from a historical weather source
-at a representative HCMC coordinate, not individual road-level weather stations.
-
-## 7. Modeling Handoff Recommendations
-
-- Use train_dataset_v2.parquet for model development.
-- Reserve holdout_dataset_v2.parquet for final evaluation.
-- Use train_metadata_v2.parquet and holdout_metadata_v2.parquet
-  for sample identification and temporal traceability.
-- Read feature_schema_v2.json before preprocessing.
-- Fit encoders and scalers on training data only.
-- Do not fit preprocessing transformations on Holdout.
-- Consider class imbalance and temporal distribution shift
-  when interpreting model performance.
-- Do not modify the original target labels without documented justification.
-
-## 8. Final Conclusion
-
-The V2 dataset passed all 24 implemented
-technical data quality checks.
-
-It is structurally validated and ready for handoff
-to the machine learning development stage.
-
-This validation does not establish label correctness,
-statistical representativeness, or future model performance.
-
----
+The exported dataset is structurally validated for handoff to the downstream modeling stage. These checks do not establish label correctness, statistical representativeness, or future model performance.
 
 Report version: 2.0
